@@ -4,17 +4,18 @@
 
 NeuroGO is a lightweight, modular AI command router built in Go that routes natural language prompts to AI providers. Think HTTP router, but for AI - route conversational commands to any AI model with a simple, unified interface.
 
-## 🌟 **Why NeuroGO?**
+## 🌟 Features
 
 - **Provider Agnostic**: Works with OpenAI, Gemini, DeepSeek, HuggingFace, Ollama, and any future AI provider
 - **Zero Lock-in**: Switch between providers without changing application logic
 - **Familiar Patterns**: If you know HTTP routers, you already understand NeuroGO
 - **Flexible Deployment**: Local models, cloud APIs, or hybrid setups
 
-## 🚀 **Quick Start**
+## 🚀 Quick Start
 
 ### Local Setup (No API Keys)
-\`\`\`bash
+
+```bash
 # Install Ollama for local AI
 curl -fsSL https://ollama.ai/install.sh | sh
 ollama serve && ollama pull llama3.1
@@ -24,10 +25,11 @@ git clone https://github.com/aldotobing/neurogo.git
 cd neurogo && make setup && make dev
 
 # Visit http://localhost:8080
-\`\`\`
+```
 
 ### Cloud Setup (With API Keys)
-\`\`\`bash
+
+```bash
 git clone https://github.com/aldotobing/neurogo.git
 cd neurogo && make setup
 
@@ -36,20 +38,22 @@ echo "OPENAI_API_KEY=sk-your-key" >> .env
 echo "DEEPSEEK_API_KEY=your-key" >> .env
 
 make dev
-\`\`\`
+```
 
 ### Docker
-\`\`\`bash
+
+```bash
 git clone https://github.com/aldotobing/neurogo.git
 cd neurogo && cp .env.example .env
 make docker-run
-\`\`\`
+```
 
-## 🔄 **Provider Management**
+## 🔄 Provider Management
 
 NeuroGO allows you to switch between AI providers dynamically or let the system auto-select the best provider for each task.
 
-### **Available Providers**
+### Available Providers
+
 | Provider | API Key Required | Best For | Status Check |
 |----------|------------------|----------|--------------|
 | **OpenAI** | ✅ OPENAI_API_KEY | General tasks, production | `use openai` |
@@ -58,10 +62,11 @@ NeuroGO allows you to switch between AI providers dynamically or let the system 
 | **Ollama** | ❌ Local setup | Development, privacy | `use ollama` |
 | **HuggingFace** | ✅ HUGGINGFACE_API_KEY | Specialized models | `use huggingface` |
 
-### **Provider Switching Commands**
+### Provider Switching Commands
 
-#### **1. Switch to Specific Provider**
-\`\`\`bash
+#### 1. Switch to Specific Provider
+
+```bash
 # Switch to DeepSeek for all subsequent commands
 POST /api/process
 {"prompt": "use deepseek"}
@@ -74,25 +79,28 @@ POST /api/process
 
 # Switch to Ollama (local)
 {"prompt": "use ollama"}
-\`\`\`
+```
 
-#### **2. Auto Mode (Recommended)**
-\`\`\`bash
+#### 2. Auto Mode (Recommended)
+
+```bash
 # Let the system choose the best provider for each task
 {"prompt": "use auto"}
-\`\`\`
+```
 
-#### **3. One-Time Provider Use**
-\`\`\`bash
+#### 3. One-Time Provider Use
+
+```bash
 # Use DeepSeek for this command only
 {"prompt": "with deepseek explain quantum computing"}
 
 # Use OpenAI for this command only
 {"prompt": "with openai write a poem about nature"}
-\`\`\`
+```
 
-#### **4. Provider Information**
-\`\`\`bash
+#### 4. Provider Information
+
+```bash
 # List all available providers
 {"prompt": "list providers"}
 
@@ -101,11 +109,11 @@ POST /api/process
 
 # System status
 {"prompt": "status"}
-\`\`\`
+```
 
-### **Example Workflow**
+### Example Workflow
 
-\`\`\`bash
+```bash
 # 1. Check what providers you have
 curl -X POST http://localhost:8080/api/process \
   -H "Content-Type: application/json" \
@@ -130,9 +138,9 @@ curl -X POST http://localhost:8080/api/process \
 curl -X POST http://localhost:8080/api/process \
   -H "Content-Type: application/json" \
   -d '{"prompt": "use auto"}'
-\`\`\`
+```
 
-### **Provider Selection Logic**
+### Provider Selection Logic
 
 When in **auto mode**, NeuroGO automatically selects the best provider based on task type:
 
@@ -142,7 +150,7 @@ When in **auto mode**, NeuroGO automatically selects the best provider based on 
 - **Summarization**: OpenAI → DeepSeek → Gemini → Ollama
 - **General**: OpenAI → DeepSeek → Gemini → Ollama
 
-## 🤖 **Supported Providers**
+## 🤖 Supported Providers
 
 | Provider | API Key | Best For | Example Commands |
 |----------|---------|----------|------------------|
@@ -152,13 +160,15 @@ When in **auto mode**, NeuroGO automatically selects the best provider based on 
 | **HuggingFace** | Required | Specialized models | `analyze sentiment of [text]` |
 | **Ollama** | None (local) | Development, privacy | `chat [message]`, `generate code for [task]` |
 
-## 💻 **Usage**
+## 💻 Usage
 
 ### Playground UI
+
 Start server and visit http://localhost:8080 for interactive testing.
 
 ### Programmatic Usage
-\`\`\`go
+
+```go
 package main
 
 import (
@@ -167,38 +177,39 @@ import (
     "os"
     "errors"
 
-	"github.com/joho/godotenv"
+    "github.com/joho/godotenv"
     "github.com/aldotobing/neurogo/router"
     "github.com/aldotobing/neurogo/providers"
     "github.com/aldotobing/neurogo/config"
 )
 
 func main() {
-	// Load environment variables
-	godotenv.Load()
+    // Load environment variables
+    godotenv.Load()
 
-	// Initialize the router
-	r := router.New()
+    // Initialize the router
+    r := router.New()
 
-	// Configure a provider
-	openAIProvider := providers.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
-	ollamaProvider := providers.NewOllama(os.Getenv("OLLAMA_HOST"))
 
-	// Register a route
-	r.Handle("summarize *", func(ctx *router.Context) error {
-		response, err := openAIProvider.Complete(ctx.Captures[0], config.CompletionOptions{
-			Model: "gpt-3.5-turbo",
-			SystemPrompt: "You are a summarization expert.",
-		})
-		if err != nil {
-			return err
-		}
-		ctx.Response = response
-		return nil
-	})
+    // Configure a provider
+    openAIProvider := providers.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+    ollamaProvider := providers.NewOllama(os.Getenv("OLLAMA_HOST"))
 
-	// Process a prompt
-	result, err := r.Process("summarize the latest AI research papers")
+    // Register a route
+    r.Handle("summarize *", func(ctx *router.Context) error {
+        response, err := openAIProvider.Complete(ctx.Captures[0], config.CompletionOptions{
+            Model: "gpt-3.5-turbo",
+            SystemPrompt: "You are a summarization expert.",
+        })
+        if err != nil {
+            return err
+        }
+        ctx.Response = response
+        return nil
+    })
+
+    // Process a prompt
+    result, err := r.Process("summarize the latest AI research papers")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -363,11 +374,14 @@ make docker-run    # Run with Docker
 neurogo/
 ├── cmd/server/          # Server entry point
 ├── providers/           # AI provider implementations ← Add new providers here
+```
+.
 ├── router/              # Core routing logic
-├── config/              # Configuration management
-├── server/              # HTTP/WebSocket server
-├── web/                 # Playground UI
+├── config/             # Configuration management
+├── server/             # HTTP/WebSocket server
+├── web/                # Playground UI
 └── Makefile            # Build automation
+```
 \`\`\`
 
 ## 📚 **Examples**

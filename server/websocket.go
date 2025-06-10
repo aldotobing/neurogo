@@ -21,7 +21,6 @@ type WSMessage struct {
 	Prompt   string `json:"prompt,omitempty"`
 	Response string `json:"response,omitempty"`
 	Error    string `json:"error,omitempty"`
-	Done     bool   `json:"done,omitempty"`
 }
 
 // SetupWebSocket configures WebSocket endpoints
@@ -53,52 +52,18 @@ func handleWebSocket(neuroRouter *router.Router) http.HandlerFunc {
 
 			switch msg.Type {
 			case "process":
-				// Check if this is a streaming request
-				if msg.Prompt == "" {
+				response, err := neuroRouter.Process(msg.Prompt)
+				if err != nil {
 					conn.WriteJSON(WSMessage{
 						Type:  "error",
-						Error: "Empty prompt",
+						Error: err.Error(),
 					})
-					continue
+				} else {
+					conn.WriteJSON(WSMessage{
+						Type:     "response",
+						Response: response,
+					})
 				}
-
-				// Create a channel to receive streaming responses
-				streamChan := make(chan string)
-				done := make(chan bool)
-
-				// Start processing in a goroutine
-				go func() {
-					// Process with streaming
-					_, err := neuroRouter.ProcessWithStream(msg.Prompt, func(chunk string) {
-						streamChan <- chunk
-					})
-					if err != nil {
-						conn.WriteJSON(WSMessage{
-							Type:  "error",
-							Error: err.Error(),
-						})
-					}
-					close(streamChan)
-				}()
-
-				// Stream responses back to client
-				for chunk := range streamChan {
-					err := conn.WriteJSON(WSMessage{
-						Type:     "chunk",
-						Response: chunk,
-					})
-					if err != nil {
-						log.Printf("Error sending chunk: %v", err)
-						break
-					}
-				}
-
-				// Send completion message
-				conn.WriteJSON(WSMessage{
-					Type: "complete",
-					Done: true,
-				})
-
 			default:
 				conn.WriteJSON(WSMessage{
 					Type:  "error",
