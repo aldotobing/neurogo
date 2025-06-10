@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroGO Playground</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🧠 NeuroGO Playground</h1>
+            <p>Universal AI Command Router - Switch between providers seamlessly</p>
+            <div class="status-bar">
+                <div class="status" id="status">
+                    <span class="status-indicator" id="statusIndicator">●</span>
+                    <span id="statusText">Connecting...</span>
+                </div>
+                <div class="current-provider" id="currentProvider">
+                    <span>🤖 Provider: Loading...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-section">
+            <a href="/docs" class="nav-link">📚 API Documentation</a>
+            <a href="/api/health" class="nav-link" target="_blank">🔍 Health Check</a>
+            <a href="/api/routes" class="nav-link" target="_blank">🛣️ Routes</a>
+        </div>
+
+        <!-- Main Playground -->
+        <div class="playground">
+            <!-- Provider Management Section -->
+            <div class="section provider-management">
+                <h3>🔄 Provider Management</h3>
+                <div class="provider-info">
+                    <div class="provider-status" id="providerStatus">
+                        <div class="loading-spinner">Loading providers...</div>
+                    </div>
+                    <div class="provider-actions">
+                        <button class="action-btn" onclick="quickCommand('list providers')">📋 List Providers</button>
+                        <button class="action-btn" onclick="quickCommand('current provider')">🎯 Current Provider</button>
+                        <button class="action-btn" onclick="quickCommand('use auto')">🤖 Auto Mode</button>
+                        <button class="action-btn" onclick="quickCommand('status')">📊 Status</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Provider Switch -->
+            <div class="section provider-switch">
+                <h3>⚡ Quick Provider Switch</h3>
+                <div class="provider-buttons">
+                    <button class="provider-btn deepseek" onclick="switchProvider('deepseek')" title="Best for reasoning and analysis">
+                        <span class="provider-icon">🧠</span>
+                        <span class="provider-name">DeepSeek</span>
+                        <span class="provider-status" id="deepseek-status">●</span>
+                    </button>
+                    <button class="provider-btn openai" onclick="switchProvider('openai')" title="Best for general tasks">
+                        <span class="provider-icon">🤖</span>
+                        <span class="provider-name">OpenAI</span>
+                        <span class="provider-status" id="openai-status">●</span>
+                    </button>
+                    <button class="provider-btn gemini" onclick="switchProvider('gemini')" title="Best for translation">
+                        <span class="provider-icon">✨</span>
+                        <span class="provider-name">Gemini</span>
+                        <span class="provider-status" id="gemini-status">●</span>
+                    </button>
+                    <button class="provider-btn ollama" onclick="switchProvider('ollama')" title="Local AI - No API key needed">
+                        <span class="provider-icon">🏠</span>
+                        <span class="provider-name">Ollama</span>
+                        <span class="provider-status" id="ollama-status">●</span>
+                    </button>
+                    <button class="provider-btn auto" onclick="switchProvider('auto')" title="Auto-select best provider">
+                        <span class="provider-icon">🎯</span>
+                        <span class="provider-name">Auto</span>
+                        <span class="provider-status">●</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="section chat-section">
+                <h3>💬 Chat Interface</h3>
+                <div class="chat-container" id="chatContainer">
+                    <div class="welcome-message">
+                        <div class="welcome-content">
+                            <h4>👋 Welcome to NeuroGO!</h4>
+                            <p>Start by selecting a provider above or try one of the example commands below.</p>
+                            <div class="quick-tips">
+                                <div class="tip">
+                                    <span class="tip-icon">💡</span>
+                                    <span>Use <code>list providers</code> to see available AI providers</span>
+                                </div>
+                                <div class="tip">
+                                    <span class="tip-icon">🔄</span>
+                                    <span>Switch providers with <code>use [provider]</code> or click buttons above</span>
+                                </div>
+                                <div class="tip">
+                                    <span class="tip-icon">🎯</span>
+                                    <span>Try <code>with [provider] [command]</code> for one-time provider use</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input type="text" id="promptInput" placeholder="Enter your command... (e.g., translate hello to Spanish)" />
+                        <button class="send-button" id="sendButton">
+                            <span id="sendIcon">➤</span>
+                            <span id="loadingIcon" style="display: none;">⟳</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Examples Section -->
+            <div class="section examples-section">
+                <h3>📝 Example Commands</h3>
+                
+                <div class="example-category">
+                    <h4>🔄 Provider Management</h4>
+                    <div class="example-grid">
+                        <div class="example" onclick="setPrompt('list providers')">
+                            <span class="example-icon">📋</span>
+                            <div class="example-content">
+                                <span class="example-title">List Providers</span>
+                                <span class="example-desc">Show all available AI providers</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('use deepseek')">
+                            <span class="example-icon">🧠</span>
+                            <div class="example-content">
+                                <span class="example-title">Use DeepSeek</span>
+                                <span class="example-desc">Switch to DeepSeek for reasoning</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('current provider')">
+                            <span class="example-icon">🎯</span>
+                            <div class="example-content">
+                                <span class="example-title">Current Provider</span>
+                                <span class="example-desc">Check active provider</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('use auto')">
+                            <span class="example-icon">🤖</span>
+                            <div class="example-content">
+                                <span class="example-title">Auto Mode</span>
+                                <span class="example-desc">Let system choose best provider</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-category">
+                    <h4>🌟 Universal Commands</h4>
+                    <div class="example-grid">
+                        <div class="example" onclick="setPrompt('translate hello world to Spanish')">
+                            <span class="example-icon">🌐</span>
+                            <div class="example-content">
+                                <span class="example-title">Translation</span>
+                                <span class="example-desc">Translate text to any language</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('think about artificial intelligence')">
+                            <span class="example-icon">🤔</span>
+                            <div class="example-content">
+                                <span class="example-title">Deep Thinking</span>
+                                <span class="example-desc">Analytical reasoning</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('generate code for a REST API')">
+                            <span class="example-icon">💻</span>
+                            <div class="example-content">
+                                <span class="example-title">Code Generation</span>
+                                <span class="example-desc">Generate clean, documented code</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('summarize the benefits of renewable energy')">
+                            <span class="example-icon">📝</span>
+                            <div class="example-content">
+                                <span class="example-title">Summarization</span>
+                                <span class="example-desc">Concise content summaries</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-category">
+                    <h4>🎯 Provider-Specific Commands</h4>
+                    <div class="example-grid">
+                        <div class="example" onclick="setPrompt('with deepseek explain quantum computing')">
+                            <span class="example-icon">🧠</span>
+                            <div class="example-content">
+                                <span class="example-title">DeepSeek Analysis</span>
+                                <span class="example-desc">Use DeepSeek for complex explanations</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('with openai write a poem about nature')">
+                            <span class="example-icon">🤖</span>
+                            <div class="example-content">
+                                <span class="example-title">OpenAI Creative</span>
+                                <span class="example-desc">Use OpenAI for creative writing</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('with gemini translate this to French')">
+                            <span class="example-icon">✨</span>
+                            <div class="example-content">
+                                <span class="example-title">Gemini Translation</span>
+                                <span class="example-desc">Use Gemini for translations</span>
+                            </div>
+                        </div>
+                        <div class="example" onclick="setPrompt('with ollama chat how are you?')">
+                            <span class="example-icon">🏠</span>
+                            <div class="example-content">
+                                <span class="example-title">Ollama Local</span>
+                                <span class="example-desc">Use local Ollama for privacy</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="getting-started">
+                    <h4>🚀 Getting Started</h4>
+                    <div class="setup-info">
+                        <div class="setup-option">
+                            <span class="setup-icon">🏠</span>
+                            <div class="setup-content">
+                                <strong>Local Setup (No API Keys)</strong>
+                                <p>Install <a href="https://ollama.ai" target="_blank">Ollama</a> locally and try the Ollama examples above</p>
+                            </div>
+                        </div>
+                        <div class="setup-option">
+                            <span class="setup-icon">☁️</span>
+                            <div class="setup-content">
+                                <strong>Cloud Setup (With API Keys)</strong>
+                                <p>Add API keys to your .env file and use any provider</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
